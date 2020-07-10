@@ -74,14 +74,14 @@ func (s *Services) Has(name string) bool {
 	return false
 }
 
-func (s *Services) Parse(env string, behindProxy bool) error {
+func (s *Services) Parse(env string) error {
 	for _, entry := range s.list {
 		entries, _, err := s.catalog.Service(entry.name, env, nil)
 		if err != nil {
 			return err
 		}
 
-		if err := s.updateService(entries, env, behindProxy); err != nil {
+		if err := s.updateService(entries, env); err != nil {
 			return err
 		}
 	}
@@ -90,7 +90,7 @@ func (s *Services) Parse(env string, behindProxy bool) error {
 	return nil
 }
 
-func (s *Services) updateService(entries []*consul.CatalogService, env string, behindProxy bool) error {
+func (s *Services) updateService(entries []*consul.CatalogService, env string) error {
 	s.m.Lock()
 	defer s.m.Unlock()
 	for _, serv := range entries {
@@ -100,7 +100,7 @@ func (s *Services) updateService(entries []*consul.CatalogService, env string, b
 					entry.address = serv.ServiceAddress
 					entry.port = serv.ServicePort
 
-					url, err := url.Parse(prepareHost(entry, behindProxy))
+					url, err := url.Parse(prepareHost(entry))
 					if err != nil {
 						return err
 					}
@@ -124,7 +124,7 @@ func (s *Services) Update(env string, behindProxy bool) error {
 		if err != nil {
 			return err
 		}
-		if err := s.updateService(entries, env, behindProxy); err != nil {
+		if err := s.updateService(entries, env); err != nil {
 			return err
 		}
 	}
@@ -188,11 +188,7 @@ func (s *Service) HostStringWithSuffix(protocol, suffix string) string {
 	return ""
 }
 
-func prepareHost(s *Service, behindProxy bool) string {
-	if behindProxy {
-		return fmt.Sprintf(withProxyFormat, s.address)
-	}
-
+func prepareHost(s *Service) string {
 	return fmt.Sprintf(withoutProxyFormat, s.address, s.port)
 }
 

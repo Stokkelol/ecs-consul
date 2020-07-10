@@ -38,7 +38,6 @@ type Config struct {
 	Env           string        `json:"env"`
 	ConsulAddress string        `json:"consulAddress"`
 	AgentPort     int           `json:"agentPort"`
-	BehindProxy   bool          `json:"behindProxy"`
 	PassPhrase    string        `json:"passPhrase"`
 	FailPhrase    string        `json:"failPhrase"`
 
@@ -91,11 +90,7 @@ func (c *Config) Validate() error {
 	}
 
 	if c.TargetPort == 0 {
-		if c.BehindProxy {
-			c.TargetPort = c.HostPort
-		} else {
-			c.TargetPort = c.ContainerPort
-		}
+		c.TargetPort = c.HostPort
 	}
 
 	if c.TTL == 0 {
