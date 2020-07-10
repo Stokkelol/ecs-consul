@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	consul "github.com/hashicorp/consul/api"
+	"log"
 	"net/url"
 	"sync"
 )
@@ -97,6 +98,7 @@ func (s *Services) updateService(entries []*consul.CatalogService, env string) e
 		if serv.ServiceTags[0] == env {
 			if entry, ok := s.list[serv.ServiceName]; ok {
 				if entry.index != serv.ModifyIndex {
+					log.Printf("Updating service %s, address: %s, port: %d", serv.ServiceName, serv.Address, serv.ServicePort)
 					entry.address = serv.ServiceAddress
 					entry.port = serv.ServicePort
 
@@ -114,7 +116,7 @@ func (s *Services) updateService(entries []*consul.CatalogService, env string) e
 	return nil
 }
 
-func (s *Services) Update(env string, behindProxy bool) error {
+func (s *Services) Update(env string) error {
 	if !s.populated {
 		return errors.New("services must be populated before updating")
 	}
