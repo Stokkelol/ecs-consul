@@ -79,11 +79,7 @@ func (c *Config) Validate() error {
 	}
 
 	if c.ConsulAddress == "" {
-		if c.BehindProxy {
-			c.ConsulAddress = c.Address
-		} else {
-			c.ConsulAddress = defaultAgentHost
-		}
+		c.ConsulAddress = c.Address
 	}
 
 	if c.ContainerPort == 0 {
@@ -131,21 +127,6 @@ func NewAgent(config *Config) (*Agent, error) {
 	s := &Agent{config: config}
 	err := s.newClient()
 	if err != nil {
-		return nil, err
-	}
-
-	serviceDef := &consul.AgentServiceRegistration{
-		Name: s.config.ServiceName,
-		Check: &consul.AgentServiceCheck{
-			TTL: s.config.TTL.String(),
-		},
-		Port:    s.config.TargetPort,
-		Address: s.config.Address,
-		Tags:    []string{s.config.Env},
-		ID:      s.config.ServiceName,
-	}
-
-	if err := s.agent.ServiceRegister(serviceDef); err != nil {
 		return nil, err
 	}
 
